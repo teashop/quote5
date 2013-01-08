@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Quote5 - Your Five Day QUote History</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="assets/bootstrap.min.css">
+  <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+  <script src="assets/bootstrap.min.js"></script>
+  <style>
+    span.connect{ color: #049cdb; font-weight:bold; }
+    span.disconnect{ color: #9d261d; font-weight:bold; }
+    span.whisper{ color: #7a43b6; font-weight:bold; }
+    span.emote { color: teal; font-style:italic; }
+    span.system { color: gray; font-style:italic; }
+
+    #chatMembers {
+      box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.067);
+    }
+    .me { background-color: #ddddff; }
+
+    #chatContainer {
+      box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.067);
+      height:400px;
+      overflow-y: scroll;
+      overflow-x: hidden;
+    }
+    #chatMessageInput {
+      width: 780px;
+    }
+
+    #chatLog {
+      width:100%;
+    }
+    #chatLog td {
+      border: none;
+    }
+
+    #chatLog td.timestamp {
+      width: 100px;
+      overflow: hidden;
+    }
+
+
+    a.chat-link {
+      color: inherit;
+    }
+    a.chat-link:before {
+      content: '[';
+    }
+    a.chat-link:after {
+      content: ']';
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="span10">
+        <h1>Quote5</h1>
+          <a id="loginButton" href="#login" role="button" class="btn" data-toggle="modal">Join Chat!</a>
+        <div id="chatContainer"> 
+          <table id="chatLog" class="table table-hover">
+          <tbody>
+          </tbody>
+          </table>
+        </div>
+       
+        <label for="chatMessageInput">Chat Message</label>
+        <input id="chatMessageInput" name="chatMessageInput" type="textarea" size="50" />
+        <p>Press enter to submit your message</p>
+      </div>
+      <div class="span2">
+        <h2>Members</h2>
+        <table id="chatMembers" class="table table-bordered">
+        <thead>
+          <tr><th></th><th id="whatup">Nickname</th></tr>
+        </thead>
+        <tbody>
+        </tbody>
+        </table>
+      </div>
+    </div> <!-- row -->
+  </div>
+
+  <script>
+    var origUrl = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20csv%20where%20url%3D'http%3A%2F%2Fdownload.finance.yahoo.com%2Fd%2Fquotes.csv%3Fs%3DPDN.TO%26f%3Dsl1d1t1c1ohgv%26e%3D.csv'%20and%20columns%3D'symbol%2Cprice%2Cdate%2Ctime%2Cchange%2Ccol1%2Chigh%2Clow%2Ccol2'&format=json";
+
+    var url = "http://query.yahooapis.com/v1/public/yql";
+
+
+    var query = "select * from csv where url='http://download.finance.yahoo.com/d/quotes.csv?s=PDN.TO&f=sl1d1t1c1ohgv&e=.csv' and columns='symbol,price,date,time,change,col1,high,low,col2'";
+  
+    var realUrl = url + "?q=" + encodeURIComponent(query);
+
+    $.ajax({
+      url: url,
+      data: {q: query, format: 'json'},
+      context:$('#chatContainer') 
+    }).done(function(result) {
+      console.log('done');
+      this.html(result);
+    }).fail(function(err) { 
+      console.log('the thing failed with an error'); 
+      console.log(err.responseText);
+    });
+
+    //console.log(encodeURIComponent("http://www.google.ca/'I like pickles'"));
+  </script>
+  </body>
+</html>
