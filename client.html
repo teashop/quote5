@@ -4,14 +4,10 @@
   <title>Quote5 - Your Five Day QUote History</title>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="assets/bootstrap.min.css">
-  <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+  <script src="assets/jquery-1.8.3.min.js"></script>
   <script src="assets/bootstrap.min.js"></script>
+  <script src="assets/underscore-min.js"></script>
   <style>
-    span.connect{ color: #049cdb; font-weight:bold; }
-    span.disconnect{ color: #9d261d; font-weight:bold; }
-    span.whisper{ color: #7a43b6; font-weight:bold; }
-    span.emote { color: teal; font-style:italic; }
-    span.system { color: gray; font-style:italic; }
 
     #chatMembers {
       box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.067);
@@ -85,20 +81,44 @@
   <script>
     var origUrl = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20csv%20where%20url%3D'http%3A%2F%2Fdownload.finance.yahoo.com%2Fd%2Fquotes.csv%3Fs%3DPDN.TO%26f%3Dsl1d1t1c1ohgv%26e%3D.csv'%20and%20columns%3D'symbol%2Cprice%2Cdate%2Ctime%2Cchange%2Ccol1%2Chigh%2Clow%2Ccol2'&format=json";
 
+    var query = "select * from csv where url='http://download.finance.yahoo.com/d/quotes.csv?s=PDN.TO&f=sl1d1t1c1ohgv&e=.csv' and columns='symbol,price,date,time,change,col1,high,low,col2'";
     var url = "http://query.yahooapis.com/v1/public/yql";
 
+    var queryTemplate = _.template("select * from csv where url='http://ichart.finance.yahoo.com/table.csv?s=<%= symbol %>' and columns='date,open,high,low,close,vol,adj' and date>='<%= startDate %>' and date<='<%= endDate %>'");
 
-    var query = "select * from csv where url='http://download.finance.yahoo.com/d/quotes.csv?s=PDN.TO&f=sl1d1t1c1ohgv&e=.csv' and columns='symbol,price,date,time,change,col1,high,low,col2'";
+    var historicalUrl = 'http://ichart.finance.yahoo.com/table.csv?s=PDN.TO';
   
     var realUrl = url + "?q=" + encodeURIComponent(query);
 
+//    console.log( queryTemplate({symbol:'PDN.TO', startDate:'2012-01-01', endDate:'2012-01-06'}));
+
+    var resultTemplate = _.template('<table class="result">'
+      + '<% _.each(results, function(row) { %>'
+      + '<tr>'
+      + '<% _.each(row, function(curRow) { %> <td><%= curRow %> <% }); %>'
+      + '</tr>'
+      + '<% }); %>'
+      + '</table>');
+
+    function displayResult(queryResult) { 
+      var resultsAsHtml = resultTemplate({results: queryResult.row});
+      $('#chatContainer').html(resultsAsHtml);
+/*
+      _.each(queryResult.row, function(row) {
+          console.log(row);
+        });
+*/        
+    }
+    
     $.ajax({
       url: url,
-      data: {q: query, format: 'json'},
+      data: {q: queryTemplate({symbol:'PDN.TO', startDate:'2012-01-01', endDate:'2012-01-06'}), format: 'json'},
       context:$('#chatContainer') 
-    }).done(function(result) {
+    }).done(function(output) {
       console.log('done');
-      this.html(result);
+      var response = JSON.parse(output);
+//      console.dir(response);
+      displayResult(response.query.results);
     }).fail(function(err) { 
       console.log('the thing failed with an error'); 
       console.log(err.responseText);
