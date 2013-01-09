@@ -46,6 +46,23 @@
     a.chat-link:after {
       content: ']';
     }
+
+    table.result {
+      max-width:500px;
+    }
+    th {
+      background-color: #39c;
+      color: white;
+    }
+
+    td.number {
+      text-align: right;
+    }
+
+    td.focus{
+      font-weight: bold;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
@@ -92,10 +109,15 @@
 
 //    console.log( queryTemplate({symbol:'PDN.TO', startDate:'2012-01-01', endDate:'2012-01-06'}));
 
-    var resultTemplate = _.template('<table class="result">'
+    var resultTemplate = _.template('<table class="result table table-bordered">'
+      + '<tr><th>Date</th><th>Close</th><th>Open</th><th>High</th><th>Low</th></tr>'
       + '<% _.each(results, function(row) { %>'
       + '<tr>'
-      + '<% _.each(row, function(curRow) { %> <td><%= curRow %> <% }); %>'
+      + '<td><%=row.date %></td>'
+      + '<td class="focus number"><%=row.close %></td>'
+      + '<td class="number"><%=row.open %></td>'
+      + '<td class="number"><%=row.high %></td>'
+      + '<td class="number"><%=row.low %></td>'
       + '</tr>'
       + '<% }); %>'
       + '</table>');
