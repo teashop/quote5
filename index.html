@@ -12,9 +12,10 @@
   <style>
     body {
       background-color: #f4f2f6;
+      padding-top: 60px;
     }
 
-    #chatContainer {
+    #resultContainer {
       background-color: #fff;
       box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.267);
       padding: 10px;
@@ -65,26 +66,50 @@
 
     #symbol-nav {
       position: fixed;
-      margin-left: 750px;
-      top: 50px;
+      margin-left: 815px;
+      top: 45px;
+    }
+
+    #symbol-nav td {
+      padding: 0;
+    }
+    #symbol-nav a {
+      text-decoration: none;
+      background-color: rgba(255,255,255,1);
+      -webkit-transition: background-color 0.2s ease-out 0s;
+      -ms-transition: background-color 0.2s ease-out 0s;
+      -o-transition: background-color 0.2s ease-out 0s;
+      transition: background-color 0.2s ease-out 0s;
+      display: block;
+      padding: 8px 10px;
+    }
+    #symbol-nav a:hover {
+      background-color: rgba(255,238,178,0.8);
     }
   </style>
 </head>
 <body>
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </a>
+        <a class="brand" href="#">Quote5</a>
+        <form class="navbar-form pull-right">
+          <input class="span2" type="text" placeholder="Date">
+          <button type="submit" class="btn">Run Again!</button>
+        </form>
+      </div>
+    </div>
+  </div>
   <div class="container">
     <div class="row">
-      <div class="span9">
-        <h1>Quote5</h1>
-        <div id="chatContainer"> 
-          <table id="chatLog" class="table table-hover">
-          <tbody>
-          </tbody>
-          </table>
+      <div class="span10">
+        <div id="resultContainer">
         </div>
-       
-        <label for="chatMessageInput">Chat Message</label>
-        <input id="chatMessageInput" name="chatMessageInput" type="textarea" size="50" />
-        <p>Press enter to submit your message</p>
       </div>
       <div id="symbol-nav" class="span2">
         <h2>Symbols</h2>
@@ -105,7 +130,7 @@
     var weekAgo = new Date(today);
     weekAgo.setDate(weekAgo.getDate()-DAYS_IN_WEEK);
 
-    var symbols = ['BMO', 'PDN.TO'];
+    var symbols = ['BMO', 'BNS', 'PDN.TO'];
 
     var query = "select * from csv where url='http://download.finance.yahoo.com/d/quotes.csv?s=PDN.TO&f=sl1d1t1c1ohgv&e=.csv' and columns='symbol,price,date,time,change,col1,high,low,col2'";
     var url = "http://query.yahooapis.com/v1/public/yql";
@@ -116,14 +141,17 @@
   
     var realUrl = url + "?q=" + encodeURIComponent(query);
 
-  
-//    console.log( queryTemplate({symbol:'PDN.TO', startDate:'2012-01-01', endDate:'2012-01-06'}));
 
-    var symbolLinkTemplate = _.template('<tr><td><%= symbol %></td></tr>');
+    // symbols in sidebar
+    var symbolLinkTemplate = _.template('<tr><td><a href="#<%= symbol %>"><%= symbol %></a></td></tr>');
 
-    var resultTemplate = _.template('<table class="result table table-bordered">'
-      + '<tr><th>Date</th><th>Close</th><th>Open</th><th>High</th><th>Low</th></tr>'
-      + '<% _.each(results, function(row) { %>'
+    // symbol result table
+    var resultTemplate = _.template(
+      '<a name="<%= symbol %>"/>'
+      + '<h3><%= symbol %></h3>'
+      + '<table class="result table table-bordered">'
+      + '<thead><tr><th>Date</th><th>Close</th><th>Open</th><th>High</th><th>Low</th></tr></thead>'
+      + '<tbody><% _.each(results, function(row) { %>'
       + '<tr>'
       + '<td><%=row.date %></td>'
       + '<td class="focus number"><%=row.close %></td>'
@@ -132,15 +160,15 @@
       + '<td class="number"><%=row.low %></td>'
       + '</tr>'
       + '<% }); %>'
-      + '</table>');
+      + '</tbody></table>');
 
     function formatDate(theDate) {
       return $.datepicker.formatDate('yy-mm-dd', theDate);
     }
 
-    function displayResult(queryResult) { 
-      var resultsAsHtml = resultTemplate({results: queryResult.row});
-      $('#chatContainer').append(resultsAsHtml);
+    function displayResult(queryResult, symbol) { 
+      var resultsAsHtml = resultTemplate({results: queryResult.row, symbol: symbol});
+      $('#resultContainer').append(resultsAsHtml);
     }
     
     _.each(symbols, function(symbol) {
@@ -148,12 +176,12 @@
         $.ajax({
           url: url,
           data: {q: queryTemplate({symbol:symbol, startDate:formatDate(weekAgo), endDate:formatDate(today)}), format: 'json'},
-          context:$('#chatContainer') 
+          context:$('#resultContainer') 
         }).done(function(output) {
           console.log('done');
           var response = JSON.parse(output);
-    //      console.dir(response);
-          displayResult(response.query.results);
+//          console.dir(response);
+          displayResult(response.query.results, symbol);
         }).fail(function(err) { 
           console.log('the thing failed with an error'); 
           console.log(err.responseText);
