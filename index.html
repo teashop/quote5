@@ -9,6 +9,7 @@
   <script src="assets/js/jquery-ui-1.9.2.custom.min.js"></script>
   <script src="assets/js/bootstrap.min.js"></script>
   <script src="assets/js/underscore-min.js"></script>
+  <script src="symbols.js"></script>
   <style>
     body {
       background-color: #f4f2f6;
@@ -122,8 +123,9 @@
     $("#datepicker").datepicker("setDate", today);
 
     // FIXME: ideally, these'd come from an external source.
+    // Currently, expecting these to come from symbols.js
     // symbols to retrieve quotes for
-    var symbols = ['BMO', 'BNS', 'PDN.TO'];
+    var symbols = symbols || ['GOOG'];
 
     // YQL URL
     var yqlUrl = "http://query.yahooapis.com/v1/public/yql";
