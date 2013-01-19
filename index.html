@@ -110,6 +110,9 @@
   </div>
 
   <script>
+    // required for IE to allow cross-site requests
+    jQuery.support.cors = true;
+
     $('#run-again').on('click', function() {
       console.log($('#datepicker').val());
       return false;
