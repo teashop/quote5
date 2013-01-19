@@ -20,35 +20,19 @@
       box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.267);
       padding: 10px;
     }
-    #chatMessageInput {
-      width: 780px;
-    }
 
-    #chatLog {
-      width:100%;
-    }
-    #chatLog td {
-      border: none;
-    }
-
-    #chatLog td.timestamp {
-      width: 100px;
-      overflow: hidden;
-    }
-
-
-    a.chat-link {
-      color: inherit;
-    }
-    a.chat-link:before {
-      content: '[';
-    }
-    a.chat-link:after {
-      content: ']';
+    .placeholder {
+      background-color: #eeeef6;
+      box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.267);
+      height: 160px;
+      max-width: 480px;
+      padding: 40px 10px;
+      text-align: center;
     }
 
     table.result {
       max-width:500px;
+      box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.267);
     }
     th {
       background-color: #39c;
@@ -159,11 +143,14 @@
       + '<%= $.datepicker.formatDate("M dd, yy", end) %>'
       + '</h2>');
 
-    // symbol result table
-    var resultTemplate = _.template(
+    var resultPlaceholderTemplate = _.template(
       '<a name="<%= symbol %>"/>'
       + '<h3><%= symbol %></h3>'
-      + '<table class="result table table-bordered">'
+      + '<div id="<%= id %>" data-symbol="<%= symbol %>"><div class="placeholder">Please wait, Loading quotes for <strong><%= symbol %></strong>...</div></div>');
+
+    // symbol result table
+    var resultContentTemplate = _.template(
+      '<table class="result table table-bordered">'
       + '<thead><tr><th>Date</th><th>Close</th><th>Open</th><th>High</th><th>Low</th></tr></thead>'
       + '<tbody><% _.each(results, function(row) { %>'
       + '<tr>'
@@ -180,15 +167,23 @@
       return $.datepicker.formatDate('yy-mm-dd', theDate);
     }
 
-    function displayResult(queryResult, symbol) { 
-      var resultsAsHtml = resultTemplate({results: queryResult.row, symbol: symbol});
-      $('#resultContainer').append(resultsAsHtml);
+    // display the results of the query, replacing the 'loading' placeholder
+    function displayResult(id, queryResult, symbol) { 
+      var resultsAsHtml = resultContentTemplate({results: queryResult.row, symbol: symbol});
+      $('#' + id).html(resultsAsHtml);
     }
     
     $('#resultContainer').append(resultTitleTemplate({start: weekAgo, end: today}));
 
     _.each(symbols, function(symbol) {
+        // add a ref to the symbol list
         $('#symbol-links > tbody').append(symbolLinkTemplate({symbol:symbol}));
+
+        var resultId = _.uniqueId();
+
+        // lay down a placeholder
+        $('#resultContainer').append(resultPlaceholderTemplate({id:resultId, symbol:symbol}));
+
         $.ajax({
           url: yqlUrl,
           data: {q: queryTemplate({symbol:symbol, startDate:formatDate(weekAgo), endDate:formatDate(today)}), format: 'json'},
@@ -197,7 +192,7 @@
           console.log('done');
           var response = JSON.parse(output);
 //          console.dir(response);
-          displayResult(response.query.results, symbol);
+          displayResult(resultId, response.query.results, symbol);
         }).fail(function(err) { 
           console.log('the thing failed with an error'); 
           console.log(err.responseText);
